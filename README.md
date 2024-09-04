@@ -1,5 +1,5 @@
 # ManaArchivesDB Card Data Microservice
-This Spring Boot microservice is responsible for maintaining and serving data in the ManaArchivesDB, a key part of the ManaVault project. The service automates the process of downloading, storing, and retrieving bulk Magic: The Gathering card data, ensuring that your card database is consistently up-to-date.
+This Spring Boot microservice is responsible for maintaining and serving data in the ManaArchivesDB, a key part of the ManaVault project. The service automates the process of downloading, storing, and retrieving bulk Magic: The Gathering card data, ensuring that the card database is consistently up-to-date (or on demand atm).
 
 ## Features
 - Data Fetching: Automatically fetches the latest bulk card data file from a specified URL.
