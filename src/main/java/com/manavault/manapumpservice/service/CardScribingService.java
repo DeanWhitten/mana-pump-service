@@ -2,6 +2,7 @@ package com.manavault.manapumpservice.service;
 
 import com.manavault.manapumpservice.model.Card;
 import com.manavault.manapumpservice.repository.CardScribingRepository;
+import com.manavault.manapumpservice.service.FileDownloadService;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,22 +21,39 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class CardScribingService {
 
+    private final FileDownloadService fileDownloadService;
+
     private final CardScribingRepository cardRepository;
     private final ObjectMapper objectMapper;
 
     public void saveCardsFromJsonFile(String filePath) throws IOException {
+        fileDownloadService.downloadDefaultCardsFile();
+        cardRepository.deleteAll();
+
         // Read the JSON file
+        int excludedCards = 0;
+        int includedCards = 0;
         File jsonFile = new File(filePath);
         JsonNode rootNode = objectMapper.readTree(jsonFile);
 
         List<Card> cards = new ArrayList<>();
         for (JsonNode cardNode : rootNode) {
             Card card = mapJsonToCard(cardNode);
-            cards.add(card);
+
+
+            if((card.getNormalImageUri() != null || card.getLargeImageUri() != null
+                    || card.getPngImageUri() != null || card.getArtCropImageUri() != null
+                    || card.getBorderCropImageUri() != null) && card.getGames().contains("paper")) {  // Check if any image URI is not null
+                cards.add(card);
+
+            }else {
+                excludedCards++;
+            }
 
             // Save in batches
             if (cards.size() == 50000) {
                 cardRepository.saveAll(cards);
+                includedCards += cards.size();
                 cards.clear();
             }
         }
@@ -43,6 +61,9 @@ public class CardScribingService {
         if (!cards.isEmpty()) {
             cardRepository.saveAll(cards);
         }
+
+        System.out.println("Saved " + includedCards + " cards");
+        System.out.println("Excluded " + excludedCards + " cards");
     }
 
     private Card mapJsonToCard(JsonNode cardNode) {
